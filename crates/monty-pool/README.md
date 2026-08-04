@@ -34,11 +34,16 @@ Workers are `monty` CLI binaries spawned as subprocesses — build one with
 install it from PyPI as [`pydantic-monty-runtime`](https://pypi.org/project/pydantic-monty-runtime/).
 
 ```rust,no_run
+use std::time::Duration;
+
 use monty_pool::{Pool, PoolConfig, PoolError, ReplConfig, TurnEvent, on_print_sync};
 
 #[tokio::main]
 async fn main() -> Result<(), PoolError> {
-    let pool = Pool::new(PoolConfig::subprocess("path/to/monty")).await?;
+    let mut config = PoolConfig::subprocess("path/to/monty");
+    // no timeouts by default; set one before running untrusted code
+    config.request_timeout = Some(Duration::from_secs(30));
+    let pool = Pool::new(config).await?;
 
     let mut session = pool.checkout(&ReplConfig::default()).await?;
     let mut on_print = on_print_sync(|_stream, text| print!("{text}"));
@@ -74,6 +79,8 @@ and restored later — including on a different worker or machine — with `Chec
   `request_timeout` (`PoolError::Timeout`), backstopping the sandbox's own resource limits
   and catching hangs those limits cannot see. When a session has a `max_duration` budget,
   the deadline also enforces it (plus `duration_limit_grace`) from outside the child.
+  `PoolConfig::subprocess` sets neither `request_timeout` nor `checkout_timeout` by
+  default; set `request_timeout` yourself for untrusted code.
 - **Untrusted children** — the parent treats every frame from a (possibly compromised)
   worker as untrusted: wire decoding validates everything and never panics, and a worker
   that violates the protocol is discarded.
@@ -81,7 +88,10 @@ and restored later — including on a different worker or machine — with `Chec
   the impact of any slow leak.
 
 Runtime errors inside the sandbox (`PoolError::Runtime`) are not crashes: the worker and its
-session remain alive and usable.
+session remain alive and usable. Resource-limit failures are the exception. They arrive as
+`PoolError::Runtime` too, carrying `MemoryError` or `TimeoutError`, but no guarantees hold
+about heap state afterwards, and a spent cumulative `max_duration` budget makes every later
+`feed` fail immediately. Finish the checkout and take a fresh one.
 
 ## Transports
 

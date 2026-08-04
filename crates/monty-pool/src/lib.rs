@@ -128,7 +128,10 @@ pub enum PoolError {
     /// mid-flight, where the abandoned worker is discarded too.
     Protocol(Cow<'static, str>),
     /// The sandboxed code raised a Python exception. The worker and its
-    /// session remain alive and usable.
+    /// session remain alive and usable — except for resource-limit failures
+    /// (`MemoryError`/`TimeoutError`), which arrive here too but leave no
+    /// guarantees about heap state, and whose spent cumulative `max_duration`
+    /// budget fails every later `feed`. Finish the checkout after one.
     Runtime(MontyException),
     /// Type checking rejected the fed snippet (sessions created with
     /// `type_check`). The worker and session remain alive; the snippet did

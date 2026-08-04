@@ -167,7 +167,7 @@ pytest: ## Run Python tests with pytest
 test-py: dev-py pytest ## Build the python package (debug profile) and run tests
 
 .PHONY: test-docs
-test-docs: dev-py ## Test docs examples only (docs/, README.md, and every crate README)
+test-docs: dev-py ## Test docs snippets (docs/, README.md, crates/monty-python/README.md) + workspace doctests
 	uv run --package pydantic-monty --only-dev pytest crates/monty-python/tests/test_readme_examples.py
 	cargo test --doc --workspace
 

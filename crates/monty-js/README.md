@@ -325,6 +325,13 @@ The `monty` binary resolves from: explicit `binaryPath` → the `MONTY_BIN`
 environment variable → the installed platform package → `PATH` → a cargo
 workspace `target/` build (development).
 
+Under `@pydantic/monty/wasm` (and the browser export), `checkoutTimeout`,
+`durationLimitGrace` and `binaryPath` are accepted for API parity but ignored:
+a checkout on an exhausted pool waits forever, nothing backs up
+`maxDurationSecs` from outside the worker, and the bundled wasm asset is always
+used. `requestTimeout` applies wherever a real `Worker` exists. `maxProcesses`
+defaults to 4 there, not the CPU count.
+
 ## Value Conversion
 
 | Python            | JavaScript                                              |
