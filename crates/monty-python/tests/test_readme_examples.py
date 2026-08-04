@@ -4,6 +4,7 @@ from pytest_examples import CodeExample, EvalExample, find_examples
 paths = (
     'crates/monty-python/README.md',
     'README.md',
+    'docs',
 )
 
 
