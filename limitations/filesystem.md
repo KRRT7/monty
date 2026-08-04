@@ -3,8 +3,10 @@
 The sandbox has no default filesystem access. The host explicitly mounts
 real directories at virtual paths through Monty's `MountTable`; everything
 outside a mount is invisible. Without any mounts, [`open()`](open.md) and
-all of [pathlib](pathlib.md)'s I/O methods raise `FileNotFoundError` for
-every path.
+all of [pathlib](pathlib.md)'s filesystem methods raise
+`PermissionError: Permission denied: '<path>'` for every path — including
+`exists`, `is_file`, `is_dir` and `is_symlink`, which in CPython return
+`False` instead of raising.
 
 ## Virtual paths are always POSIX
 
