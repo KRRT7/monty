@@ -89,9 +89,10 @@ and restored later — including on a different worker or machine — with `Chec
 
 Runtime errors inside the sandbox (`PoolError::Runtime`) are not crashes: the worker and its
 session remain alive and usable. Resource-limit failures are the exception. They arrive as
-`PoolError::Runtime` too, carrying `MemoryError` or `TimeoutError`, but no guarantees hold
-about heap state afterwards, and a spent cumulative `max_duration` budget makes every later
-`feed` fail immediately. Finish the checkout and take a fresh one.
+`PoolError::Runtime` too, and no guarantees hold about heap state afterwards. The two do
+not fail alike: a `MemoryError` may leave the checkout accepting feeds, while a
+`TimeoutError` means the cumulative `max_duration` budget is spent, so every later `feed`
+re-raises it. Finish the checkout after either and take a fresh one.
 
 ## Transports
 
